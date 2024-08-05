@@ -9,13 +9,13 @@ provider "openstack" {
 
 resource "openstack_compute_keypair_v2" "key" {
   name       = "workshop_key"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
 resource "openstack_networking_router_v2" "router" {
   name                = "workshop_router"
   admin_state_up      = true
-  external_network_id = "a13bc653-bc5d-4274-9de6-32a40df0d881"
+  external_network_id = "a13bc653-bc5d-4274-9de6-32a40df0d881" //public-jp 
 }
 
 resource "openstack_networking_network_v2" "network" {
@@ -107,11 +107,6 @@ resource "openstack_networking_secgroup_rule_v2" "control_plane_api" {
   security_group_id = openstack_networking_secgroup_v2.control_plane_api.id
 }
 
-resource "openstack_identity_application_credential_v3" "credential" {
-  name  = "k0s-cloud-credentials"
-  roles = ["reader", "member", "load-balancer_member"]
-}
-
 resource "openstack_networking_port_v2" "master_port" {
   depends_on = [openstack_networking_subnet_v2.subnet]
   count      = var.master_count
@@ -155,7 +150,7 @@ resource "null_resource" "provision_master" {
       user        = "ubuntu"
       host        = element(openstack_networking_floatingip_v2.master_fip.*.address, count.index)
       timeout     = "500s"
-      private_key = file("~/.ssh/id_ed25519")
+      private_key = file("~/.ssh/id_rsa")
     }
 
     inline = [
@@ -214,7 +209,7 @@ resource "null_resource" "provision_worker" {
       user        = "ubuntu"
       host        = element(openstack_networking_floatingip_v2.worker_fip.*.address, count.index)
       timeout     = "500s"
-      private_key = file("~/.ssh/id_ed25519")
+      private_key = file("~/.ssh/id_rsa")
     }
 
     inline = [
